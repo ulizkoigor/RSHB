@@ -11,7 +11,7 @@ from calendar import monthrange
 from lxml import etree
 
 YEAR_PERIOD = 2023
-MONTH_PERIOD = 4
+MONTH_PERIOD = 6
 DATE_START_PERIOD = datetime(YEAR_PERIOD, MONTH_PERIOD, 1, 00, 00, 00)
 DATE_END_PERIOD = datetime(YEAR_PERIOD, MONTH_PERIOD, monthrange(YEAR_PERIOD, MONTH_PERIOD)[1], 23, 59, 59)
 
@@ -58,9 +58,9 @@ def parse_saransk_news():
         while True:
             number_page = number_page + 1
             print(
-                f'http://saransk-news.net/{site_section}/2023/4/p/{number_page}')
+                f'http://saransk-news.net/{site_section}/2023/{MONTH_PERIOD}/p/{number_page}')
             html = etree.HTML(requests.get(
-                f'http://saransk-news.net/{site_section}/2023/4/p/{number_page}').text)
+                f'http://saransk-news.net/{site_section}/2023/{MONTH_PERIOD}/p/{number_page}').text)
             web_elements = html.xpath('//div[@class="post"]')
             if len(web_elements) == 0:
                 break
@@ -229,7 +229,7 @@ def parse_info_rm():
             number_page += 1
             print(f"https://www.info-rm.com/{site_section}/?PAGEN_1={number_page}&SIZEN_1=20")
             driver.get(f"https://www.info-rm.com/{site_section}/?PAGEN_1={number_page}&SIZEN_1=20")
-            time.sleep(1)
+            time.sleep(3)
             html = etree.HTML(driver.page_source)
             web_elements = html.xpath('//div[@class="news-item"]')
             for web_element in web_elements:
@@ -271,7 +271,7 @@ def parse_saransk_bez_formata():
                 f"https://saransk.bezformata.com/daynews/?npage={number_page}&nday={day}&nmonth={MONTH_PERIOD}&nyear={YEAR_PERIOD}")
             driver.get(
                 f"https://saransk.bezformata.com/daynews/?npage={number_page}&nday={day}&nmonth={MONTH_PERIOD}&nyear={YEAR_PERIOD}")
-            time.sleep(1)
+            time.sleep(5)
             html = etree.HTML(driver.page_source)
             web_elements = html.xpath('//article[@class="listtopicline"]')
             if len(web_elements) == 0:
@@ -331,7 +331,7 @@ def create_table():
                 for press_release in news_site.get('press_releases'):
                     ratio_press_release = fuzz.UQRatio(press_release_pg13['title'], press_release['title'])
                     if ratio_press_release >= 75:
-                        writer.writerow([press_release['title'], news_site.get('site'), press_release['link'],
+                        writer.writerow([press_release['title'], news_site.get('site_name'), press_release['link'],
                                          press_release['date'], ratio_press_release])
                         break
                 else:
@@ -358,7 +358,7 @@ def create_table_for_production():
                     ratio_press_release = fuzz.UQRatio(press_release_pg13['title'], press_release['title'])
                     if ratio_press_release >= 75:
                         writer.writerow(
-                            [press_release['title'], '', '', '', news_site.get('site'), press_release['link']])
+                            [press_release['title'], '', '', '', news_site.get('site_name'), press_release['link']])
                         break
                 else:
                     writer.writerow([press_release_pg13['title'], '', '', '', news_site.get('site_name')])
@@ -384,9 +384,9 @@ if __name__ == '__main__':
 
     pg13_press_releases = parse_pg13()
 
-    # parsed_sites.append(parse_saransk_news())
-    # parsed_sites.append(parse_mordovmedia())
-    # parsed_sites.append(parse_stolica_s())
+    parsed_sites.append(parse_saransk_news())
+    parsed_sites.append(parse_mordovmedia())
+    parsed_sites.append(parse_stolica_s())
 
     driver = undetected_chromedriver.Chrome()
 
